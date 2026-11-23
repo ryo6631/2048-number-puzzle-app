@@ -625,14 +625,14 @@
   <div class="ad-modal" id="storeModal" role="dialog" aria-modal="true" aria-label="広告を消す（課金）">
     <div class="ad-card">
       <div class="ad-head">
-        <span class="ad-badge" id="storeBadge">課金 ・ サンプル</span>
+        <span class="ad-badge" id="storeBadge">アプリ内課金</span>
         <span class="ad-count" id="storeKind">買い切り</span>
       </div>
       <div id="storeMain">
         <div class="ad-creative store-hero">
           <div class="ad-play store-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10.2 9.3v5.4L15 12z" fill="currentColor" stroke="none"/><line x1="4.5" y1="19.5" x2="19.5" y2="4.5"/></svg></div>
           <div class="ad-title" id="storeTitle">広告を消して、快適にあそぶ</div>
-          <div class="store-price" id="storePrice">¥480</div>
+          <div class="store-price" id="storePrice">¥500</div>
           <ul class="store-benefits">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span id="storeBenefit1">再スタート時の広告が出なくなります</span></li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span id="storeBenefit2">ゲームオーバーの復活が、広告なしで使えます</span></li>
@@ -640,11 +640,12 @@
           </ul>
         </div>
         <div class="ad-body">
-          <p class="ad-status" id="storeNote">試作版では疑似購入です。実際のお支払いは発生しません（アプリ版ではApp Storeの課金に接続します）。</p>
+          <p class="ad-status" id="storeNote">App Storeの課金で購入します。機種変更時は「購入を復元」で再適用できます。</p>
           <div class="ad-btns">
             <button class="btn" id="storeCancelBtn" type="button">やめる</button>
-            <button class="btn primary" id="storeBuyBtn" type="button">¥480 で購入する</button>
+            <button class="btn primary" id="storeBuyBtn" type="button">¥500 で購入する</button>
           </div>
+          <button class="btn" id="storeRestoreBtn" type="button" style="margin-top:8px;width:100%">購入を復元する</button>
         </div>
       </div>
       <div id="storeDone" style="display:none">
@@ -714,7 +715,7 @@
       <li>ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります（試作版では5秒のサンプル広告が流れます）。</li>
       <li>「もう一度あそぶ」で再スタートするときは、<b>3回に1回</b>広告が表示されてから新しいゲームが始まります。</li>
       <li>上の<b>テーマ</b>から、盤面とタイルの色をいつでも切り替えられます。プレイ中の盤面やスコアはそのまま引き継がれます。</li>
-      <li>「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります（試作版では疑似購入で、お支払いは発生しません）。</li>
+      <li>「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります。</li>
       <li>上の<b>ランキング</b>ボタンから、これまでのスコア順位を確認できます。ゲームオーバーになると自動で記録されます。</li>
     </ol>
     <div class="chain" aria-hidden="true">
@@ -785,7 +786,10 @@
   var AD_SECONDS = 5;
   var adTimerId = null, adStartedAt = 0, reviveToastTimerId = null;
   var adMode = 'reward'; // 'reward' (復活) | 'interstitial' (再スタート時)
-  var adsRemoved = false; // 「広告を消す」購入済みかどうか（試作版ではセッション内のみ有効）
+  var REMOVE_ADS_KEY = 'suuji-puzzle-removeads-v1';
+  var adsRemoved = false; // 「広告を消す」購入済みかどうか（端末に保存）
+  try { adsRemoved = localStorage.getItem(REMOVE_ADS_KEY) === '1'; } catch(e){}
+  function saveRemoveAds(){ try { localStorage.setItem(REMOVE_ADS_KEY, adsRemoved ? '1' : '0'); } catch(e){} }
   var storeFresh = false, storeTimerId = null; // storeFresh: 購入直後かどうか（完了画面の文言切り替え用）
   var restartCount = 0;  // 再スタート回数。3回に1回インタースティシャル広告を出す
   var AD_EVERY = 3;
@@ -834,16 +838,16 @@
       adFinished: '広告終了',
       storeBtn: '広告を消す', storeBtnDone: '広告なし',
       storeAria: '広告を消す（課金）',
-      storeBadge: '課金 ・ サンプル', storeKind: '買い切り',
+      storeBadge: 'アプリ内課金', storeKind: '買い切り',
       storeTitle: '広告を消して、快適にあそぶ',
-      storePrice: '¥480',
+      storePrice: '¥500',
       storeBenefit1: '再スタート時の広告が出なくなります',
       storeBenefit2: 'ゲームオーバーの復活が、広告なしで使えます',
       storeBenefit3: '一度の購入でずっと有効（買い切り）',
-      storeNote: '試作版では疑似購入です。実際のお支払いは発生しません（アプリ版ではApp Storeの課金に接続します）。',
+      storeNote: 'App Storeの課金で購入します。機種変更時は「購入を復元」で再適用できます。',
       storeBuy: function(p){ return p + ' で購入する'; },
       storeBuying: '購入処理中…',
-      storeCancel: 'やめる', storeClose: '閉じる',
+      storeCancel: 'やめる', storeClose: '閉じる', storeRestore: '購入を復元する',
       storeDoneTitle: '購入が完了しました',
       storeDoneDesc: '広告は表示されなくなります。復活も広告を見ずに使えます。',
       storeOwnedTitle: '広告なしが適用中です',
@@ -867,7 +871,7 @@
         'ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります（試作版では5秒のサンプル広告が流れます）。',
         '「もう一度あそぶ」で再スタートするときは、<b>3回に1回</b>広告が表示されてから新しいゲームが始まります。',
         '上の<b>テーマ</b>から、盤面とタイルの色をいつでも切り替えられます。プレイ中の盤面やスコアはそのまま引き継がれます。',
-        '「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります（試作版では疑似購入で、お支払いは発生しません）。',
+        '「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります。',
         '上の<b>ランキング</b>ボタンから、これまでのスコア順位を確認できます。ゲームオーバーになると自動で記録されます。'
       ],
       tip: 'コツ：いちばん大きい数字は<b>角に固定</b>して、そこから小さい順に並べていくと崩れにくくなります。',
@@ -908,16 +912,16 @@
       adFinished: 'Ad finished',
       storeBtn: 'Remove ads', storeBtnDone: 'No ads',
       storeAria: 'Remove ads (in-app purchase)',
-      storeBadge: 'Purchase · Sample', storeKind: 'One-time',
+      storeBadge: 'In-App Purchase', storeKind: 'One-time',
       storeTitle: 'Remove ads and play in comfort',
-      storePrice: '¥480',
+      storePrice: '¥500',
       storeBenefit1: 'No more ads when you restart',
       storeBenefit2: 'Revive after game over without watching an ad',
       storeBenefit3: 'One purchase, yours for good (no subscription)',
-      storeNote: 'This prototype uses a simulated purchase — no real payment is made (the app version will use App Store billing).',
+      storeNote: 'Purchases are processed by the App Store. If you switch devices, use Restore Purchases to re-apply.',
       storeBuy: function(p){ return 'Buy for ' + p; },
       storeBuying: 'Processing…',
-      storeCancel: 'Cancel', storeClose: 'Close',
+      storeCancel: 'Cancel', storeClose: 'Close', storeRestore: 'Restore Purchases',
       storeDoneTitle: 'Purchase complete',
       storeDoneDesc: 'Ads will no longer appear, and you can revive without watching an ad.',
       storeOwnedTitle: 'No-ads is active',
@@ -989,6 +993,7 @@
     if(!storeBuyBtn.disabled) storeBuyBtn.textContent = d.storeBuy(d.storePrice);
     document.getElementById('storeCancelBtn').textContent = d.storeCancel;
     document.getElementById('storeCloseBtn').textContent = d.storeClose;
+    document.getElementById('storeRestoreBtn').textContent = d.storeRestore;
     if(adsRemoved){
       document.getElementById('storeDoneTitle').textContent = storeFresh ? d.storeDoneTitle : d.storeOwnedTitle;
       document.getElementById('storeDoneDesc').textContent = storeFresh ? d.storeDoneDesc : d.storeOwnedDesc;
@@ -1444,7 +1449,7 @@
     sndWin();
   }
 
-  /* ---------- store: 広告を消す課金（試作版では疑似購入） ---------- */
+  /* ---------- store: 広告を消す課金（アプリ版は本番IAP、ブラウザでは疑似購入） ---------- */
   function updateStoreBtn(){
     document.getElementById('storeBtnLabel').textContent = adsRemoved ? t().storeBtnDone : t().storeBtn;
     document.getElementById('storeBtn').classList.toggle('owned', adsRemoved);
@@ -1475,28 +1480,90 @@
     }
     storeModal.classList.remove('show');
   }
+  function resetBuyBtn(){
+    if(adsRemoved) return;
+    storeBuyBtn.disabled = false;
+    storeBuyBtn.textContent = t().storeBuy(t().storePrice);
+  }
+  function grantRemoveAds(){
+    adsRemoved = true; saveRemoveAds();
+    updateStoreBtn();
+  }
+  function completePurchase(){
+    storeFresh = true;
+    grantRemoveAds();
+    // ゲームオーバー画面が出ている場合、復活ボタンの文言も広告なし用に切り替える
+    if(overlayKind === 'over' && history.length){
+      var steps = reviveSteps();
+      reviveBtnLabel.textContent = t().reviveFreeBtn(steps);
+      reviveNote.textContent = t().reviveNoteFree;
+    }
+    document.getElementById('storeMain').style.display = 'none';
+    document.getElementById('storeDone').style.display = '';
+    document.getElementById('storeDoneTitle').textContent = t().storeDoneTitle;
+    document.getElementById('storeDoneDesc').textContent = t().storeDoneDesc;
+    beep(660, .12, 'sine', .06);
+    setTimeout(function(){ beep(880, .16, 'sine', .06); }, 110);
+  }
   function buyStore(){
     if(adsRemoved || storeBuyBtn.disabled) return;
     storeBuyBtn.disabled = true;
     storeBuyBtn.textContent = t().storeBuying;
+    if(isNativeApp() && window.CdvPurchase){
+      // 本番: App Storeの課金シートを開く（結果はIAPのイベントで受け取る）
+      try {
+        var offer = iapProduct && iapProduct.getOffer ? iapProduct.getOffer() : null;
+        if(offer) offer.order();
+        else if(iapStore) iapStore.order(IAP_PRODUCT_ID);
+        else resetBuyBtn();
+      } catch(e){ resetBuyBtn(); }
+      return;
+    }
+    // ブラウザ確認用: 疑似購入
     storeTimerId = setTimeout(function(){
       storeTimerId = null;
-      adsRemoved = true; storeFresh = true;
-      updateStoreBtn();
-      // ゲームオーバー画面が出ている場合、復活ボタンの文言も広告なし用に切り替える
-      if(overlayKind === 'over' && history.length){
-        var steps = reviveSteps();
-        reviveBtnLabel.textContent = t().reviveFreeBtn(steps);
-        reviveNote.textContent = t().reviveNoteFree;
-      }
-      document.getElementById('storeMain').style.display = 'none';
-      document.getElementById('storeDone').style.display = '';
-      document.getElementById('storeDoneTitle').textContent = t().storeDoneTitle;
-      document.getElementById('storeDoneDesc').textContent = t().storeDoneDesc;
-      beep(660, .12, 'sine', .06);
-      setTimeout(function(){ beep(880, .16, 'sine', .06); }, 110);
+      completePurchase();
     }, 1200);
   }
+  function restoreStore(){
+    if(adsRemoved) return;
+    if(isNativeApp() && iapStore){
+      try { iapStore.restorePurchases(); } catch(e){}
+    }
+  }
+
+  /* ---------- store: 本番IAP（cordova-plugin-purchase / StoreKit） ---------- */
+  var IAP_PRODUCT_ID = 'com.yukiya.numberpuzzle.removeads';
+  var iapStore = null, iapProduct = null;
+  function isNativeApp(){
+    return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  }
+  function initIAP(){
+    if(!isNativeApp() || !window.CdvPurchase) return;
+    try {
+      var store = CdvPurchase.store;
+      iapStore = store;
+      store.register({ id: IAP_PRODUCT_ID, type: CdvPurchase.ProductType.NON_CONSUMABLE, platform: CdvPurchase.Platform.APPLE_APPSTORE });
+      store.when().productUpdated(function(p){
+        if(!p || p.id !== IAP_PRODUCT_ID) return;
+        iapProduct = p;
+        if(p.pricing && p.pricing.price){
+          I18N.ja.storePrice = p.pricing.price;
+          I18N.en.storePrice = p.pricing.price;
+          document.getElementById('storePrice').textContent = p.pricing.price;
+          if(!storeBuyBtn.disabled) storeBuyBtn.textContent = t().storeBuy(p.pricing.price);
+        }
+        if(p.owned && !adsRemoved) grantRemoveAds();
+      });
+      store.when().approved(function(tx){
+        try { tx.finish(); } catch(e){}
+        completePurchase();
+      });
+      store.error(function(){ resetBuyBtn(); });
+      store.initialize([CdvPurchase.Platform.APPLE_APPSTORE]);
+    } catch(e){}
+  }
+  document.addEventListener('deviceready', initIAP, false);
 
   /* ---------- ranking ---------- */
   function recordRanking(scoreVal, maxVal, movesVal, timeVal){
@@ -1568,6 +1635,7 @@
   document.getElementById('storeCancelBtn').addEventListener('click', closeStore);
   document.getElementById('storeCloseBtn').addEventListener('click', closeStore);
   storeBuyBtn.addEventListener('click', buyStore);
+  document.getElementById('storeRestoreBtn').addEventListener('click', restoreStore);
   adCancelBtn.addEventListener('click', cancelAd);
   adReviveBtn.addEventListener('click', function(){
     if(adReviveBtn.disabled) return;

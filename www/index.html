@@ -676,6 +676,7 @@
         <p class="ranking-note" id="rankingNote">ゲームオーバーになると、そのゲームのスコアが自動で追加されます。</p>
         <div class="ranking-empty" id="rankingEmpty">まだ記録がありません。<br>まずは1ゲーム、最後まで遊んでみてください。</div>
         <ol class="ranking-list" id="rankingList"></ol>
+        <button class="btn" id="gcLeaderboardBtn" type="button" style="display:none;margin-top:10px;width:100%">Game Centerランキングを見る</button>
       </div>
     </div>
   </div>
@@ -825,6 +826,7 @@
       reviveAdBtn: function(n){ return n + '手前から復活する'; },
       reviveNote: function(n){ return '広告を見ると、詰む少し手前（' + n + '手前）の状態から<br>スコア・盤面そのままで再開できます。'; },
       reviveToast: function(n){ return n + '手前から再開しました'; },
+      adLoadFailed: '広告の読み込みに失敗しました',
       adBadge: '広告 ・ サンプル',
       adTitle: 'ここに広告が入ります',
       adDesc: '試作版ではサンプル広告を表示しています。本番ではここに動画広告が流れ、見終わると復活できます。',
@@ -856,6 +858,7 @@
       reviveNoteFree: '購入済みのため、広告を見ずにそのまま復活できます。',
       rankingBtn: 'ランキング',
       rankingNote: 'このページを開いている間に遊んだゲームのスコア順です。ゲームオーバーになると自動で追加されます。',
+      gcViewBtn: 'Game Centerランキングを見る',
       rankingEmpty: 'まだ記録がありません。<br>まずは1ゲーム、最後まで遊んでみてください。',
       rankingCount: function(n){ return n + ' 件の記録'; },
       rankingMeta: function(max, mv, time, at){ return '最大タイル ' + max + ' ・ ' + mv + '手 ・ ' + time + ' ・ ' + at; },
@@ -899,6 +902,7 @@
       reviveAdBtn: function(n){ return 'Revive ' + n + ' moves back'; },
       reviveNote: function(n){ return 'Watch an ad to resume from just before you got stuck (' + n + ' moves back),<br>with your score and board as they were.'; },
       reviveToast: function(n){ return 'Resumed ' + n + ' moves back'; },
+      adLoadFailed: 'Failed to load the ad',
       adBadge: 'Ad · Sample',
       adTitle: 'Your ad will appear here',
       adDesc: 'This prototype shows a sample ad. In the release version a video ad plays here, and finishing it revives you.',
@@ -930,6 +934,7 @@
       reviveNoteFree: 'You have removed ads, so you can revive right away without watching one.',
       rankingBtn: 'Ranking',
       rankingNote: 'Scores from games played while this page is open, best first. A score is added automatically when a game ends.',
+      gcViewBtn: 'View Game Center Leaderboard',
       rankingEmpty: 'No scores yet.<br>Play a game to the end to appear here.',
       rankingCount: function(n){ return n + (n === 1 ? ' game' : ' games'); },
       rankingMeta: function(max, mv, time, at){ return 'Max tile ' + max + ' · ' + mv + ' moves · ' + time + ' · ' + at; },
@@ -1017,6 +1022,7 @@
     rankingModal.setAttribute('aria-label', d.rankingBtn);
     document.getElementById('rankingCloseBtn').setAttribute('aria-label', d.closeLabel);
     document.getElementById('rankingNote').textContent = d.rankingNote;
+    document.getElementById('gcLeaderboardBtn').textContent = d.gcViewBtn;
     renderRanking();
     document.getElementById('helpCloseBtn').setAttribute('aria-label', d.closeLabel);
     document.getElementById('soundBtn').setAttribute('aria-label', soundOn ? d.soundOn : d.soundOff);
@@ -1264,6 +1270,7 @@
         overPending = false;
         over = true; stopTimer(); sndOver();
         recordRanking(finalScore, finalMax, finalMoves, finalTime);
+        submitGameCenterScore(finalScore);
         overlayKind = 'over';
         overFinal = { score: finalScore, max: finalMax, moves: finalMoves };
         overlayScore.textContent = t().overScore(fmt(finalScore), fmt(finalMax));
@@ -1333,21 +1340,30 @@
   }
   function playNativeReward(AdMob){
     overlay.classList.remove('show');
-    var rewarded = false, done = false, handles = [];
+    var rewarded = false, failed = false, done = false, handles = [];
     function cleanup(){ handles.forEach(function(h){ if(h && h.remove) h.remove(); }); }
     function finish(){
       if(done) return; done = true; cleanup();
-      if(rewarded){ doRevive(); } else { overlay.classList.add('show'); }
+      if(rewarded){ doRevive(); }
+      else if(failed){
+        // 広告が読み込めなかった場合は復活させず、失敗したことを知らせる
+        overlay.classList.add('show');
+        reviveToast.textContent = t().adLoadFailed;
+        reviveToast.classList.add('show');
+        if(reviveToastTimerId) clearTimeout(reviveToastTimerId);
+        reviveToastTimerId = setTimeout(function(){ reviveToast.classList.remove('show'); }, 2200);
+      }
+      else { overlay.classList.add('show'); }
     }
     AdMob.addListener('onRewardedVideoAdReward', function(){ rewarded = true; }).then(function(h){ handles.push(h); });
     AdMob.addListener('onRewardedVideoAdDismissed', finish).then(function(h){ handles.push(h); });
-    AdMob.addListener('onRewardedVideoAdFailedToLoad', finish).then(function(h){ handles.push(h); });
-    AdMob.addListener('onRewardedVideoAdFailedToShow', finish).then(function(h){ handles.push(h); });
+    AdMob.addListener('onRewardedVideoAdFailedToLoad', function(){ failed = true; finish(); }).then(function(h){ handles.push(h); });
+    AdMob.addListener('onRewardedVideoAdFailedToShow', function(){ failed = true; finish(); }).then(function(h){ handles.push(h); });
     ensureAdMobInit(AdMob).then(function(){
       return AdMob.prepareRewardVideoAd({ adId: REWARD_AD_ID });
     }).then(function(){
       return AdMob.showRewardVideoAd();
-    }).catch(function(){ finish(); });
+    }).catch(function(){ failed = true; finish(); });
   }
   function playNativeInterstitial(AdMob){
     var done = false, handles = [];
@@ -1417,6 +1433,7 @@
   function requestNewGame(){
     if(overlayKind === 'win' && overlay.classList.contains('show')){
       recordRanking(score, maxTile(), moves, currentElapsed());
+      submitGameCenterScore(score);
       overlayKind = null;
     }
     restartCount++;
@@ -1565,6 +1582,31 @@
   }
   document.addEventListener('deviceready', initIAP, false);
 
+  /* ---------- Game Center（アプリ版のみ） ---------- */
+  var GC_LEADERBOARD_ID = 'bestscore';
+  function gameCenter(){
+    try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.GameCenter) || null; }
+    catch(e){ return null; }
+  }
+  function initGameCenter(){
+    var gc = gameCenter();
+    if(!isNativeApp() || !gc) return;
+    gc.signIn().catch(function(){});
+    var btn = document.getElementById('gcLeaderboardBtn');
+    if(btn) btn.style.display = '';
+  }
+  function submitGameCenterScore(scoreVal){
+    var gc = gameCenter();
+    if(!isNativeApp() || !gc || !scoreVal || scoreVal <= 0) return;
+    gc.submitScore({ leaderboardId: GC_LEADERBOARD_ID, score: scoreVal }).catch(function(){});
+  }
+  function showGameCenter(){
+    var gc = gameCenter();
+    if(!gc) return;
+    gc.showLeaderboard({ leaderboardId: GC_LEADERBOARD_ID }).catch(function(){});
+  }
+  document.addEventListener('deviceready', initGameCenter, false);
+
   /* ---------- ranking ---------- */
   function recordRanking(scoreVal, maxVal, movesVal, timeVal){
     if(!scoreVal || scoreVal <= 0) return;
@@ -1689,6 +1731,7 @@
   /* ---------- ranking modal ---------- */
   document.getElementById('rankingBtn').addEventListener('click', openRanking);
   document.getElementById('rankingCloseBtn').addEventListener('click', closeRanking);
+  document.getElementById('gcLeaderboardBtn').addEventListener('click', showGameCenter);
   rankingModal.addEventListener('click', function(e){ if(e.target === rankingModal) closeRanking(); });
 
   /* ---------- input: keyboard ---------- */

@@ -1,0 +1,12 @@
+{
+  "name": "capacitor-plugin-gamecenter",
+  "version": "1.0.0",
+  "description": "Minimal Game Center bridge (sign-in, submit score, show leaderboard) for Capacitor",
+  "license": "MIT",
+  "author": "Yukiya",
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  }
+}

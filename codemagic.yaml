@@ -26,6 +26,7 @@ workflows:
         script: |
           cd ios/App
           perl -i -pe "s/# Add your Pods here/# Add your Pods here\n  pod 'GoogleUserMessagingPlatform', '~> 2.1'/" Podfile
+          rm -f Podfile.lock
           pod install
       - name: Fetch signing files
         script: |

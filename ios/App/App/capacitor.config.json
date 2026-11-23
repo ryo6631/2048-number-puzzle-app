@@ -1,0 +1,16 @@
+{
+	"appId": "com.yukiya.numberpuzzle",
+	"appName": "2048 数字パズル",
+	"plugins": {
+		"AdMob": {
+			"appId": "ca-app-pub-9487701155695176~9492598122"
+		}
+	},
+	"server": {
+		"androidScheme": "https"
+	},
+	"webDir": "www",
+	"packageClassList": [
+		"AdMobPlugin"
+	]
+}

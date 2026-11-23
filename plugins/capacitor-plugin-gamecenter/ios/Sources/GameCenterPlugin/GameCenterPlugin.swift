@@ -66,7 +66,9 @@ public class GameCenterPlugin: CAPPlugin, GKGameCenterControllerDelegate {
             if let leaderboardId = leaderboardId, #available(iOS 14.0, *) {
                 vc = GKGameCenterViewController(leaderboardID: leaderboardId, playerScope: .global, timeScope: .allTime)
             } else {
-                vc = GKGameCenterViewController(state: .leaderboards)
+                let fallback = GKGameCenterViewController()
+                fallback.viewState = .leaderboards
+                vc = fallback
             }
             vc.gameCenterDelegate = self
             self.bridge?.viewController?.present(vc, animated: true, completion: nil)

@@ -7,7 +7,7 @@ workflows:
       app_store_connect: AppStoreConnect
     environment:
       groups:
-        -　signing
+        - signing
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"

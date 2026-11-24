@@ -3,7 +3,14 @@ import Capacitor
 import GameKit
 
 @objc(GameCenterPlugin)
-public class GameCenterPlugin: CAPPlugin, GKGameCenterControllerDelegate {
+public class GameCenterPlugin: CAPPlugin, CAPBridgedPlugin, GKGameCenterControllerDelegate {
+    public let identifier = "GameCenterPlugin"
+    public let jsName = "GameCenter"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "signIn", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "submitScore", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "showLeaderboard", returnType: CAPPluginReturnPromise)
+    ]
 
     @objc func signIn(_ call: CAPPluginCall) {
         let localPlayer = GKLocalPlayer.local

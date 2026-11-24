@@ -550,13 +550,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="7.5" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.5" cy="10" r="1.15" fill="currentColor" stroke="none"/><path d="M12 21a2.6 2.6 0 0 0 2.6-2.6c0-.8-.4-1.4-.9-1.9-.5-.6-.7-1-.7-1.7"/></svg>
       <span id="themeLabelText">テーマ</span>
     </span>
-    <div class="theme-options" role="group" id="themeOptions" aria-label="テーマ">
-      <button type="button" class="theme-btn" data-theme-btn="classic" aria-pressed="true"><span class="swatches" aria-hidden="true"><i style="background:#f6ead2"></i><i style="background:#f5a65b"></i><i style="background:#e8634a"></i><i style="background:#0f766e"></i></span><span data-theme-name="classic">クラシック</span></button>
-      <button type="button" class="theme-btn" data-theme-btn="ocean" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#e2f1f7"></i><i style="background:#6fc2e3"></i><i style="background:#2589bd"></i><i style="background:#0b3d5f"></i></span><span data-theme-name="ocean">オーシャン</span></button>
-      <button type="button" class="theme-btn" data-theme-btn="sakura" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#fdeef1"></i><i style="background:#f9a8bc"></i><i style="background:#e7547e"></i><i style="background:#7c2d4e"></i></span><span data-theme-name="sakura">さくら</span></button>
-      <button type="button" class="theme-btn" data-theme-btn="forest" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#e9efdb"></i><i style="background:#a9c686"></i><i style="background:#639e46"></i><i style="background:#1b4332"></i></span><span data-theme-name="forest">フォレスト</span></button>
-      <button type="button" class="theme-btn" data-theme-btn="neon" aria-pressed="false"><span class="swatches" aria-hidden="true"><i style="background:#0891b2"></i><i style="background:#7c3aed"></i><i style="background:#db2777"></i><i style="background:#e879f9"></i></span><span data-theme-name="neon">ネオン</span></button>
-    </div>
+    <button type="button" class="theme-btn" id="themeCycleBtn" aria-label="テーマ">
+      <span class="swatches" aria-hidden="true" id="themeCycleSwatches"><i style="background:#f6ead2"></i><i style="background:#f5a65b"></i><i style="background:#e8634a"></i><i style="background:#0f766e"></i></span>
+      <span data-theme-name="classic" id="themeCycleName">クラシック</span>
+    </button>
     <button class="btn icon-btn" id="soundBtn" type="button" aria-pressed="true" aria-label="音あり">
       <svg id="soundOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9.4 9.4 0 0 1 0 13"/></svg>
       <svg id="soundOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
@@ -968,7 +965,7 @@
     document.getElementById('subtitle').innerHTML = d.subtitle;
     document.getElementById('newGameLabel').textContent = d.newGame;
     document.getElementById('themeLabelText').textContent = d.themeLabel;
-    document.getElementById('themeOptions').setAttribute('aria-label', d.themeAria);
+    document.getElementById('themeCycleBtn').setAttribute('aria-label', d.themeAria);
     document.querySelectorAll('[data-theme-name]').forEach(function(el){
       var k = el.getAttribute('data-theme-name');
       var key = 'theme' + k.charAt(0).toUpperCase() + k.slice(1);
@@ -1700,25 +1697,38 @@
     if(soundOn) sndMove();
   });
 
-  /* ---------- theme switch ---------- */
+  /* ---------- theme switch（タップで順番に切り替え） ---------- */
+  var THEME_ORDER = ['classic', 'ocean', 'sakura', 'forest', 'neon'];
+  var THEME_SWATCHES = {
+    classic: ['#f6ead2', '#f5a65b', '#e8634a', '#0f766e'],
+    ocean: ['#e2f1f7', '#6fc2e3', '#2589bd', '#0b3d5f'],
+    sakura: ['#fdeef1', '#f9a8bc', '#e7547e', '#7c2d4e'],
+    forest: ['#e9efdb', '#a9c686', '#639e46', '#1b4332'],
+    neon: ['#0891b2', '#7c3aed', '#db2777', '#e879f9']
+  };
   function setTheme(next){
     if(!THEME_SEG_COLORS[next]) next = 'classic';
     theme = next;
     document.documentElement.setAttribute('data-theme', next);
     // Neon is a dark skin: tell the browser so form controls / scrollbars match
     document.documentElement.style.colorScheme = next === 'neon' ? 'dark' : '';
-    document.querySelectorAll('[data-theme-btn]').forEach(function(b){
-      b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-btn') === next));
-    });
+    var nameEl = document.getElementById('themeCycleName');
+    if(nameEl){
+      nameEl.setAttribute('data-theme-name', next);
+      var key = 'theme' + next.charAt(0).toUpperCase() + next.slice(1);
+      if(t()[key]) nameEl.textContent = t()[key];
+    }
+    var sw = document.getElementById('themeCycleSwatches');
+    if(sw && THEME_SWATCHES[next]){
+      var dots = sw.querySelectorAll('i');
+      THEME_SWATCHES[next].forEach(function(color, i){ if(dots[i]) dots[i].style.background = color; });
+    }
     if(grid) renderProgress();
   }
-  document.querySelectorAll('[data-theme-btn]').forEach(function(b){
-    b.addEventListener('click', function(){
-      var next = b.getAttribute('data-theme-btn');
-      if(next === theme) return;
-      setTheme(next);
-      sndMove();
-    });
+  document.getElementById('themeCycleBtn').addEventListener('click', function(){
+    var idx = THEME_ORDER.indexOf(theme);
+    setTheme(THEME_ORDER[(idx + 1) % THEME_ORDER.length]);
+    sndMove();
   });
 
   /* ---------- language switch ---------- */

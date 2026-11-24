@@ -68,6 +68,19 @@ public class GameCenterPlugin: CAPPlugin, CAPBridgedPlugin, GKGameCenterControll
 
     @objc func showLeaderboard(_ call: CAPPluginCall) {
         let leaderboardId = call.getString("leaderboardId")
+        guard GKLocalPlayer.local.isAuthenticated else {
+            // 未サインイン時はリーダーボードを開かず、認証画面の表示だけ試みる
+            let localPlayer = GKLocalPlayer.local
+            localPlayer.authenticateHandler = { viewController, error in
+                if let vc = viewController {
+                    DispatchQueue.main.async {
+                        self.bridge?.viewController?.present(vc, animated: true, completion: nil)
+                    }
+                }
+            }
+            call.resolve(["presented": false, "reason": "notAuthenticated"])
+            return
+        }
         DispatchQueue.main.async {
             let vc: GKGameCenterViewController
             if let leaderboardId = leaderboardId, #available(iOS 14.0, *) {
@@ -79,7 +92,7 @@ public class GameCenterPlugin: CAPPlugin, CAPBridgedPlugin, GKGameCenterControll
             }
             vc.gameCenterDelegate = self
             self.bridge?.viewController?.present(vc, animated: true, completion: nil)
-            call.resolve()
+            call.resolve(["presented": true])
         }
     }
 

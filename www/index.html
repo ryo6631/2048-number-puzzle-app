@@ -2,7 +2,7 @@
 <html lang="ja" data-theme="classic">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" href="data:," />
 <title>数字パズルゲーム</title>
@@ -131,7 +131,7 @@
   html[data-theme="neon"] .tbig{background:#000;color:#fef08a;box-shadow:0 0 14px rgba(254,240,138,.4)}
 
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
+  html,body{margin:0;padding:0;touch-action:manipulation}
   body{
     background:var(--bg);
     color:var(--ink);
@@ -1606,6 +1606,10 @@
     gc.showLeaderboard({ leaderboardId: GC_LEADERBOARD_ID }).catch(function(){});
   }
   document.addEventListener('deviceready', initGameCenter, false);
+
+  // ダブルタップ／ピンチでの画面拡大を無効化
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+  document.addEventListener('dblclick', function(e){ e.preventDefault(); }, { passive: false });
 
   /* ---------- ranking ---------- */
   function recordRanking(scoreVal, maxVal, movesVal, timeVal){

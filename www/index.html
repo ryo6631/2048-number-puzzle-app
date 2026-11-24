@@ -856,6 +856,7 @@
       rankingBtn: 'ランキング',
       rankingNote: 'このページを開いている間に遊んだゲームのスコア順です。ゲームオーバーになると自動で追加されます。',
       gcViewBtn: 'Game Centerランキングを見る',
+      gcNotSignedIn: 'Game Centerにサインインしていません。「設定 → Game Center」からサインインしてください',
       rankingEmpty: 'まだ記録がありません。<br>まずは1ゲーム、最後まで遊んでみてください。',
       rankingCount: function(n){ return n + ' 件の記録'; },
       rankingMeta: function(max, mv, time, at){ return '最大タイル ' + max + ' ・ ' + mv + '手 ・ ' + time + ' ・ ' + at; },
@@ -932,6 +933,7 @@
       rankingBtn: 'Ranking',
       rankingNote: 'Scores from games played while this page is open, best first. A score is added automatically when a game ends.',
       gcViewBtn: 'View Game Center Leaderboard',
+      gcNotSignedIn: 'Not signed in to Game Center. Sign in via Settings → Game Center',
       rankingEmpty: 'No scores yet.<br>Play a game to the end to appear here.',
       rankingCount: function(n){ return n + (n === 1 ? ' game' : ' games'); },
       rankingMeta: function(max, mv, time, at){ return 'Max tile ' + max + ' · ' + mv + ' moves · ' + time + ' · ' + at; },
@@ -1600,7 +1602,14 @@
   function showGameCenter(){
     var gc = gameCenter();
     if(!gc) return;
-    gc.showLeaderboard({ leaderboardId: GC_LEADERBOARD_ID }).catch(function(){});
+    gc.showLeaderboard({ leaderboardId: GC_LEADERBOARD_ID }).then(function(res){
+      if(res && res.presented === false){
+        reviveToast.textContent = t().gcNotSignedIn;
+        reviveToast.classList.add('show');
+        if(reviveToastTimerId) clearTimeout(reviveToastTimerId);
+        reviveToastTimerId = setTimeout(function(){ reviveToast.classList.remove('show'); }, 3600);
+      }
+    }).catch(function(){});
   }
   document.addEventListener('deviceready', initGameCenter, false);
 

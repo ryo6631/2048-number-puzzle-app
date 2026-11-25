@@ -602,13 +602,13 @@
   <div class="ad-modal" id="adModal" role="dialog" aria-modal="true" aria-label="広告">
     <div class="ad-card">
       <div class="ad-head">
-        <span class="ad-badge" id="adBadge">広告 ・ サンプル</span>
+        <span class="ad-badge" id="adBadge">広告</span>
         <span class="ad-count" id="adCountdown">あと 5 秒</span>
       </div>
       <div class="ad-creative">
         <div class="ad-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></div>
         <div class="ad-title" id="adTitle">ここに広告が入ります</div>
-        <div class="ad-desc" id="adDesc">試作版ではサンプル広告を表示しています。本番ではここに動画広告が流れ、見終わると復活できます。</div>
+        <div class="ad-desc" id="adDesc">広告を表示しています。見終わると復活できます。</div>
       </div>
       <div class="ad-progress"><div class="ad-progress-bar" id="adProgressBar"></div></div>
       <div class="ad-body">
@@ -712,7 +712,7 @@
       <li>同じ数字どうしがぶつかると<b>合体して2倍</b>になります。2＋2＝4、4＋4＝8…</li>
       <li>1手ごとに新しいタイル（2か4）が空きマスに現れます。</li>
       <li><b>2048</b>を作ればクリア。動かせる手がなくなるとゲームオーバーです。</li>
-      <li>ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります（試作版では5秒のサンプル広告が流れます）。</li>
+      <li>ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります。</li>
       <li>「もう一度あそぶ」で再スタートするときは、<b>3回に1回</b>広告が表示されてから新しいゲームが始まります。</li>
       <li>上の<b>テーマ</b>から、盤面とタイルの色をいつでも切り替えられます。プレイ中の盤面やスコアはそのまま引き継がれます。</li>
       <li>「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります。</li>
@@ -736,7 +736,7 @@
     </div>
   </section>
 
-  <p class="note" id="footerNote">試作版です。遊んでみて「もっとこうしたい」があれば教えてください（制限時間モード、盤面サイズ変更、ランキングなど追加できます）。</p>
+  <p class="note" id="footerNote">遊んでみて「もっとこうしたい」があれば、App Storeのレビューで教えてください。</p>
       </div>
     </div>
   </div>
@@ -861,10 +861,10 @@
       reviveNote: function(n){ return '広告を見ると、詰む少し手前（' + n + '手前）の状態から<br>スコア・盤面そのままで再開できます。'; },
       reviveToast: function(n){ return n + '手前から再開しました'; },
       adLoadFailed: '広告の読み込みに失敗しました',
-      adBadge: '広告 ・ サンプル',
+      adBadge: '広告',
       adTitle: 'ここに広告が入ります',
-      adDesc: '試作版ではサンプル広告を表示しています。本番ではここに動画広告が流れ、見終わると復活できます。',
-      adDescInt: '試作版ではサンプル広告を表示しています。本番ではここに広告が流れ、終わると新しいゲームが始まります。',
+      adDesc: '広告を表示しています。見終わると復活できます。',
+      adDescInt: '広告を表示しています。終わると新しいゲームが始まります。',
       adDoneInt: '広告が終わりました。新しいゲームを始められます。',
       startGame: 'ゲームをはじめる',
       adPlaying: '広告を再生中です。終わるまでお待ちください…',
@@ -891,7 +891,7 @@
       reviveFreeBtn: function(n){ return '広告なしで ' + n + '手前から復活'; },
       reviveNoteFree: '購入済みのため、広告を見ずにそのまま復活できます。',
       rankingBtn: 'ランキング',
-      rankingNote: 'このページを開いている間に遊んだゲームのスコア順です。ゲームオーバーになると自動で追加されます。',
+      rankingNote: 'これまでに遊んだゲームのスコア順です。ゲームオーバーになると自動で追加されます。',
       gcViewBtn: 'Game Centerランキングを見る',
       gcNotSignedIn: 'Game Centerにサインインしていません。「設定 → Game Center」からサインインしてください',
       rankingEmpty: 'まだ記録がありません。<br>まずは1ゲーム、最後まで遊んでみてください。',
@@ -906,7 +906,7 @@
         '同じ数字どうしがぶつかると<b>合体して2倍</b>になります。2＋2＝4、4＋4＝8…',
         '1手ごとに新しいタイル（2か4）が空きマスに現れます。',
         '<b>2048</b>を作ればクリア。動かせる手がなくなるとゲームオーバーです。',
-        'ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります（試作版では5秒のサンプル広告が流れます）。',
+        'ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります。',
         '「もう一度あそぶ」で再スタートするときは、<b>3回に1回</b>広告が表示されてから新しいゲームが始まります。',
         '上の<b>テーマ</b>から、盤面とタイルの色をいつでも切り替えられます。プレイ中の盤面やスコアはそのまま引き継がれます。',
         '「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります。',
@@ -914,7 +914,7 @@
       ],
       tip: 'コツ：いちばん大きい数字は<b>角に固定</b>して、そこから小さい順に並べていくと崩れにくくなります。',
       keySwipe: 'スワイプ', keyDpad: '方向ボタン',
-      footerNote: '試作版です。遊んでみて「もっとこうしたい」があれば教えてください（制限時間モード、盤面サイズ変更など追加できます）。'
+      footerNote: '遊んでみて「もっとこうしたい」があれば、App Storeのレビューで教えてください。'
     },
     en: {
       docTitle: 'Number Puzzle Game',
@@ -938,10 +938,10 @@
       reviveNote: function(n){ return 'Watch an ad to resume from just before you got stuck (' + n + ' moves back),<br>with your score and board as they were.'; },
       reviveToast: function(n){ return 'Resumed ' + n + ' moves back'; },
       adLoadFailed: 'Failed to load the ad',
-      adBadge: 'Ad · Sample',
+      adBadge: 'Ad',
       adTitle: 'Your ad will appear here',
-      adDesc: 'This prototype shows a sample ad. In the release version a video ad plays here, and finishing it revives you.',
-      adDescInt: 'This prototype shows a sample ad. In the release version an ad plays here, and a new game starts when it ends.',
+      adDesc: 'An ad is playing. Finishing it revives you.',
+      adDescInt: 'An ad is playing. A new game starts when it ends.',
       adDoneInt: 'Ad finished. You can start a new game.',
       startGame: 'Start game',
       adPlaying: 'Ad playing. Please wait until it ends…',
@@ -968,7 +968,7 @@
       reviveFreeBtn: function(n){ return 'Revive ' + n + ' moves back (no ad)'; },
       reviveNoteFree: 'You have removed ads, so you can revive right away without watching one.',
       rankingBtn: 'Ranking',
-      rankingNote: 'Scores from games played while this page is open, best first. A score is added automatically when a game ends.',
+      rankingNote: 'Your past game scores, best first. A score is added automatically when a game ends.',
       gcViewBtn: 'View Game Center Leaderboard',
       gcNotSignedIn: 'Not signed in to Game Center. Sign in via Settings → Game Center',
       rankingEmpty: 'No scores yet.<br>Play a game to the end to appear here.',
@@ -983,15 +983,15 @@
         'When two tiles with the same number touch, they <b>merge and double</b>. 2+2=4, 4+4=8…',
         'After each move, a new tile (2 or 4) appears in an empty cell.',
         'Make <b>2048</b> to win. If no moves are left, it\'s game over.',
-        'Even after game over, you can <b>watch an ad to revive 5 moves back</b>. Your score and elapsed time also return to that point (in this prototype, a 5-second sample ad plays).',
+        'Even after game over, you can <b>watch an ad to revive 5 moves back</b>. Your score and elapsed time also return to that point.',
         'When you restart with "Play again", an ad appears <b>once every three restarts</b> before the new game begins.',
         'Use <b>Theme</b> above the board to switch the board and tile colors anytime — your current game and score carry over.',
-        'Buy <b>Remove ads</b> and the restart ads disappear, and revives no longer need an ad (in this prototype the purchase is simulated — no payment is made).',
+        'Buy <b>Remove ads</b> and the restart ads disappear, and revives no longer need an ad.',
         'Tap the <b>Ranking</b> button above to see your scores ranked. A score is added automatically when a game ends.'
       ],
       tip: 'Tip: Keep your biggest number <b>fixed in a corner</b> and line up smaller numbers next to it in order — your board will hold together much longer.',
       keySwipe: 'Swipe', keyDpad: 'D-pad buttons',
-      footerNote: 'This is a prototype. Play it and tell me what you\'d like changed — a time-limit mode, different board sizes, and more can be added.'
+      footerNote: 'Played it? Tell me in an App Store review what you would like changed.'
     }
   };
   var lang = (navigator.language && navigator.language.toLowerCase().indexOf('en') === 0) ? 'en' : 'ja';

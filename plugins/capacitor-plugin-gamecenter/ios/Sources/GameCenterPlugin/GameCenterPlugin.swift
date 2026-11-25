@@ -66,21 +66,9 @@ public class GameCenterPlugin: CAPPlugin, CAPBridgedPlugin, GKGameCenterControll
         }
     }
 
-    @objc func showLeaderboard(_ call: CAPPluginCall) {
-        let leaderboardId = call.getString("leaderboardId")
-        guard GKLocalPlayer.local.isAuthenticated else {
-            // 未サインイン時はリーダーボードを開かず、認証画面の表示だけ試みる
-            let localPlayer = GKLocalPlayer.local
-            localPlayer.authenticateHandler = { viewController, error in
-                if let vc = viewController {
-                    DispatchQueue.main.async {
-                        self.bridge?.viewController?.present(vc, animated: true, completion: nil)
-                    }
-                }
-            }
-            call.resolve(["presented": false, "reason": "notAuthenticated"])
-            return
-        }
+    private var lastAuthError: String?
+
+    private func presentLeaderboard(leaderboardId: String?, call: CAPPluginCall) {
         DispatchQueue.main.async {
             let vc: GKGameCenterViewController
             if let leaderboardId = leaderboardId, #available(iOS 14.0, *) {
@@ -93,6 +81,35 @@ public class GameCenterPlugin: CAPPlugin, CAPBridgedPlugin, GKGameCenterControll
             vc.gameCenterDelegate = self
             self.bridge?.viewController?.present(vc, animated: true, completion: nil)
             call.resolve(["presented": true])
+        }
+    }
+
+    @objc func showLeaderboard(_ call: CAPPluginCall) {
+        let leaderboardId = call.getString("leaderboardId")
+        let localPlayer = GKLocalPlayer.local
+        if localPlayer.isAuthenticated {
+            presentLeaderboard(leaderboardId: leaderboardId, call: call)
+            return
+        }
+        // 未認証なら認証をやり直し、結果（成功／ログイン画面／エラー）を返す
+        localPlayer.authenticateHandler = { viewController, error in
+            if let error = error {
+                self.lastAuthError = error.localizedDescription
+            }
+            if let vc = viewController {
+                DispatchQueue.main.async {
+                    self.bridge?.viewController?.present(vc, animated: true, completion: nil)
+                }
+                call.resolve(["presented": false, "reason": "authPrompt"])
+            } else if localPlayer.isAuthenticated {
+                self.presentLeaderboard(leaderboardId: leaderboardId, call: call)
+            } else {
+                var result: [String: Any] = ["presented": false, "reason": "notAuthenticated"]
+                if let e = self.lastAuthError {
+                    result["error"] = e
+                }
+                call.resolve(result)
+            }
         }
     }
 

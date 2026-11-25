@@ -790,6 +790,41 @@
   var adsRemoved = false; // 「広告を消す」購入済みかどうか（端末に保存）
   try { adsRemoved = localStorage.getItem(REMOVE_ADS_KEY) === '1'; } catch(e){}
   function saveRemoveAds(){ try { localStorage.setItem(REMOVE_ADS_KEY, adsRemoved ? '1' : '0'); } catch(e){} }
+
+  /* ---------- 状態の保存（ベスト・ランキング・進行中の盤面） ---------- */
+  var SAVE_KEY = 'suuji-puzzle-2048-save-v1';
+  function saveState(){
+    try {
+      var data = {
+        best: best,
+        rankSeq: rankSeq,
+        lastRankId: lastRankId,
+        ranking: ranking.map(function(e){
+          return { id: e.id, score: e.score, max: e.max, moves: e.moves, time: e.time, at: (e.at instanceof Date) ? e.at.toISOString() : e.at };
+        }),
+        game: null
+      };
+      if(grid && !over){
+        data.game = {
+          grid: clone(grid), score: score, moves: moves, merges: merges, revives: revives,
+          elapsed: currentElapsed(), history: history, wonOnce: wonOnce, keepPlaying: keepPlaying
+        };
+      }
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    } catch(e){}
+  }
+  function loadState(){
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if(!raw) return null;
+      var data = JSON.parse(raw);
+      if(!data || typeof data !== 'object') return null;
+      if(Array.isArray(data.ranking)){
+        data.ranking.forEach(function(e){ e.at = new Date(e.at); });
+      }
+      return data;
+    } catch(e){ return null; }
+  }
   var storeFresh = false, storeTimerId = null; // storeFresh: 購入直後かどうか（完了画面の文言切り替え用）
   var restartCount = 0;  // 再スタート回数。3回に1回インタースティシャル広告を出す
   var AD_EVERY = 3;
@@ -798,7 +833,7 @@
   var theme = 'classic';
   var audioCtx = null;
   var overlayKind = null; // 'win' | 'over' | null
-  var ranking = []; // このページを開いている間の記録（スコア順に保持）
+  var ranking = []; // ローカルランキング（端末に保存され、スコア順に保持）
   var rankSeq = 0, lastRankId = 0;
   var overFinal = null;
 
@@ -1246,6 +1281,7 @@
 
     var m = maxTile();
     render();
+    saveState();
 
     if(m >= 2048 && !wonOnce){
       wonOnce = true; keepPlaying = false; overlayKind = 'win';
@@ -1463,6 +1499,7 @@
     stopAd();
     overlay.classList.remove('show');
     render(); startTimer();
+    saveState();
     showReviveToast(steps);
     sndWin();
   }
@@ -1627,6 +1664,7 @@
     ranking.sort(function(a, b){ return b.score - a.score || b.max - a.max || a.moves - b.moves; });
     if(ranking.length > 20) ranking = ranking.slice(0, 20);
     lastRankId = entry.id;
+    saveState();
   }
   function renderRanking(){
     var d = t();
@@ -1674,6 +1712,7 @@
     spawn(); spawn();
     document.getElementById('statTime').textContent = '0:00';
     render(); startTimer();
+    saveState();
   }
   document.getElementById('newGameBtn').addEventListener('click', requestNewGame);
   overlayMainBtn.addEventListener('click', requestNewGame);
@@ -1801,7 +1840,34 @@
   });
 
   applyLang();
-  newGame();
+  var savedState = loadState();
+  if(savedState){
+    best = savedState.best || 0;
+    ranking = Array.isArray(savedState.ranking) ? savedState.ranking : [];
+    rankSeq = savedState.rankSeq || 0;
+    lastRankId = savedState.lastRankId || 0;
+  }
+  var savedGame = savedState && savedState.game;
+  if(savedGame && Array.isArray(savedGame.grid)){
+    grid = clone(savedGame.grid);
+    score = savedGame.score || 0; moves = savedGame.moves || 0;
+    merges = savedGame.merges || 0; revives = savedGame.revives || 0;
+    history = Array.isArray(savedGame.history) ? savedGame.history : [];
+    wonOnce = !!savedGame.wonOnce; keepPlaying = !!savedGame.keepPlaying;
+    over = false; overPending = false; overlayKind = null; overFinal = null;
+    lastNew = null; lastMerged = {};
+    elapsedBase = savedGame.elapsed || 0;
+    if(canMove()){
+      document.getElementById('statTime').textContent = fmtTime(elapsedBase);
+      render(); startTimer();
+    } else {
+      newGame();
+    }
+  } else {
+    newGame();
+  }
+  document.addEventListener('visibilitychange', function(){ if(document.hidden) saveState(); });
+  window.addEventListener('pagehide', saveState);
 })();
 </script>
 </body>

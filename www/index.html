@@ -282,8 +282,10 @@
   .revive-toast{
     position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:6;
     background:var(--teal);color:#fff;font-size:13px;font-weight:800;
-    padding:8px 14px;border-radius:999px;box-shadow:var(--shadow);
-    display:none;white-space:nowrap;pointer-events:none;
+    padding:8px 14px;border-radius:14px;box-shadow:var(--shadow);
+    display:none;white-space:normal;pointer-events:none;
+    width:max-content;max-width:92%;text-align:center;line-height:1.5;
+    overflow-wrap:anywhere;
   }
   .revive-toast.show{display:block;animation:overlayIn .3s ease-out}
 
@@ -1604,7 +1606,7 @@
     if(!gc) return;
     gc.showLeaderboard({ leaderboardId: GC_LEADERBOARD_ID }).then(function(res){
       if(res && res.presented === false){
-        reviveToast.textContent = t().gcNotSignedIn;
+        reviveToast.textContent = t().gcNotSignedIn + (res.error ? '\n(' + res.error + ')' : '');
         reviveToast.classList.add('show');
         if(reviveToastTimerId) clearTimeout(reviveToastTimerId);
         reviveToastTimerId = setTimeout(function(){ reviveToast.classList.remove('show'); }, 3600);

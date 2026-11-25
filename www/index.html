@@ -1277,7 +1277,7 @@
     lastNew = null;
     spawn();
 
-    if(gained > 0){ showScoreAdd(gained); sndMerge(mergeCount); } else { sndMove(); }
+    if(gained > 0){ showScoreAdd(gained); sndMerge(mergeCount); hapticImpact(mergeCount >= 2 ? 'medium' : 'light'); } else { sndMove(); }
 
     var m = maxTile();
     render();
@@ -1622,6 +1622,14 @@
 
   /* ---------- Game Center（アプリ版のみ） ---------- */
   var GC_LEADERBOARD_ID = 'bestscore';
+  function hapticImpact(style){
+    var gc = gameCenter();
+    if(gc && gc.haptic){
+      gc.haptic({ style: style || 'light' }).catch(function(){});
+    } else if(navigator.vibrate){
+      try { navigator.vibrate(10); } catch(e){}
+    }
+  }
   function gameCenter(){
     try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.GameCenter) || null; }
     catch(e){ return null; }

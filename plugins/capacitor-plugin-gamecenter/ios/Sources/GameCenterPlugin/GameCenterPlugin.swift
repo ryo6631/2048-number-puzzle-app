@@ -9,8 +9,26 @@ public class GameCenterPlugin: CAPPlugin, CAPBridgedPlugin, GKGameCenterControll
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "signIn", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "submitScore", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "showLeaderboard", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "showLeaderboard", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "haptic", returnType: CAPPluginReturnPromise)
     ]
+
+    @objc func haptic(_ call: CAPPluginCall) {
+        let style = call.getString("style") ?? "light"
+        DispatchQueue.main.async {
+            let generator: UIImpactFeedbackGenerator
+            switch style {
+            case "medium":
+                generator = UIImpactFeedbackGenerator(style: .medium)
+            case "heavy":
+                generator = UIImpactFeedbackGenerator(style: .heavy)
+            default:
+                generator = UIImpactFeedbackGenerator(style: .light)
+            }
+            generator.impactOccurred()
+        }
+        call.resolve()
+    }
 
     @objc func signIn(_ call: CAPPluginCall) {
         let localPlayer = GKLocalPlayer.local

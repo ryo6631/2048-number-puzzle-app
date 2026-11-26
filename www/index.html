@@ -712,7 +712,7 @@
       <li>同じ数字どうしがぶつかると<b>合体して2倍</b>になります。2＋2＝4、4＋4＝8…</li>
       <li>1手ごとに新しいタイル（2か4）が空きマスに現れます。</li>
       <li><b>2048</b>を作ればクリア。動かせる手がなくなるとゲームオーバーです。</li>
-      <li>ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります。</li>
+      <li>ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります（復活は1ゲーム3回まで）。</li>
       <li>「もう一度あそぶ」で再スタートするときは、<b>3回に1回</b>広告が表示されてから新しいゲームが始まります。</li>
       <li>上の<b>テーマ</b>から、盤面とタイルの色をいつでも切り替えられます。プレイ中の盤面やスコアはそのまま引き継がれます。</li>
       <li>「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります。</li>
@@ -783,6 +783,7 @@
   var overPending = false, overTimerId = null;
   var GAME_OVER_DELAY = 1200;
   var REVIVE_BACK = 5;
+  var MAX_REVIVES = 3;
   var AD_SECONDS = 5;
   var adTimerId = null, adStartedAt = 0, reviveToastTimerId = null;
   var adMode = 'reward'; // 'reward' (復活) | 'interstitial' (再スタート時)
@@ -890,6 +891,7 @@
       storeOwnedDesc: 'このゲームでは広告は表示されません。復活も広告なしで使えます。',
       reviveFreeBtn: function(n){ return '広告なしで ' + n + '手前から復活'; },
       reviveNoteFree: '購入済みのため、広告を見ずにそのまま復活できます。',
+      reviveLimitNote: '復活は1ゲーム3回までです。',
       rankingBtn: 'ランキング',
       rankingNote: 'これまでに遊んだゲームのスコア順です。ゲームオーバーになると自動で追加されます。',
       gcViewBtn: 'Game Centerランキングを見る',
@@ -906,7 +908,7 @@
         '同じ数字どうしがぶつかると<b>合体して2倍</b>になります。2＋2＝4、4＋4＝8…',
         '1手ごとに新しいタイル（2か4）が空きマスに現れます。',
         '<b>2048</b>を作ればクリア。動かせる手がなくなるとゲームオーバーです。',
-        'ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります。',
+        'ゲームオーバーになっても、<b>広告を見れば5手前</b>から復活できます。スコアと経過時間もその時点のものに戻ります（復活は1ゲーム3回まで）。',
         '「もう一度あそぶ」で再スタートするときは、<b>3回に1回</b>広告が表示されてから新しいゲームが始まります。',
         '上の<b>テーマ</b>から、盤面とタイルの色をいつでも切り替えられます。プレイ中の盤面やスコアはそのまま引き継がれます。',
         '「<b>広告を消す</b>」を購入すると、再スタート時の広告がなくなり、復活も広告なしで使えるようになります。',
@@ -967,6 +969,7 @@
       storeOwnedDesc: 'Ads will not appear in this game, and you can revive without watching an ad.',
       reviveFreeBtn: function(n){ return 'Revive ' + n + ' moves back (no ad)'; },
       reviveNoteFree: 'You have removed ads, so you can revive right away without watching one.',
+      reviveLimitNote: 'You can revive up to 3 times per game.',
       rankingBtn: 'Ranking',
       rankingNote: 'Your past game scores, best first. A score is added automatically when a game ends.',
       gcViewBtn: 'View Game Center Leaderboard',
@@ -983,7 +986,7 @@
         'When two tiles with the same number touch, they <b>merge and double</b>. 2+2=4, 4+4=8…',
         'After each move, a new tile (2 or 4) appears in an empty cell.',
         'Make <b>2048</b> to win. If no moves are left, it\'s game over.',
-        'Even after game over, you can <b>watch an ad to revive 5 moves back</b>. Your score and elapsed time also return to that point.',
+        'Even after game over, you can <b>watch an ad to revive 5 moves back</b>. Your score and elapsed time also return to that point. (Up to 3 revives per game.)',
         'When you restart with "Play again", an ad appears <b>once every three restarts</b> before the new game begins.',
         'Use <b>Theme</b> above the board to switch the board and tile colors anytime — your current game and score carry over.',
         'Buy <b>Remove ads</b> and the restart ads disappear, and revives no longer need an ad.',
@@ -1082,7 +1085,9 @@
       overlayTitle.textContent = d.gameOver;
       overlayText.innerHTML = d.overText(fmt(overFinal.max), fmt(overFinal.moves));
       overlayMainBtn.textContent = d.playAgain;
-      if(history.length){
+      if(history.length && revives >= MAX_REVIVES){
+        reviveNote.textContent = d.reviveLimitNote;
+      } else if(history.length){
         var steps = reviveSteps();
         if(adsRemoved){
           reviveBtnLabel.textContent = d.reviveFreeBtn(steps);
@@ -1315,7 +1320,11 @@
         overlayText.innerHTML = t().overText(fmt(finalMax), fmt(finalMoves));
         overlayMainBtn.textContent = t().playAgain;
         overlaySubBtn.style.display = 'none';
-        if(history.length){
+        if(history.length && revives >= MAX_REVIVES){
+          overlayReviveBtn.style.display = 'none';
+          reviveNote.textContent = t().reviveLimitNote;
+          reviveNote.style.display = '';
+        } else if(history.length){
           var steps = Math.min(REVIVE_BACK, history.length);
           if(adsRemoved){
             reviveBtnLabel.textContent = t().reviveFreeBtn(steps);
@@ -1485,6 +1494,7 @@
     if(over) overlay.classList.add('show');
   }
   function doRevive(){
+    if(revives >= MAX_REVIVES) { stopAd(); return; }
     var steps = reviveSteps();
     if(!steps) { stopAd(); return; }
     var targetIndex = history.length - steps;
